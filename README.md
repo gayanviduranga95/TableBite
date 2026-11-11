@@ -93,9 +93,29 @@ Open a terminal in the backend directory:
 ```bash
 cd backend
 mvn clean compile
+mvn exec:java -Dexec.mainClass=com.tablebite.Main
 ```
 
-Configure the database connection in `backend/src/main/resources/application.properties` and create the required MySQL database before running the application.
+The backend exposes the browser HTTP API on port `8080` and keeps the TCP
+server on port `5000`. Set the following environment variables before startup:
+
+- `DB_USER` - PostgreSQL username
+- `DB_PASSWORD` - PostgreSQL password
+- `HTTP_PORT` - optional HTTP port override (defaults to `8080`)
+- `STAFF_ACCESS_CODE` - required code for internal kitchen, orders, and admin API access
+
+The database URL is `jdbc:postgresql://localhost:5432/tablebite_db`.
+Database migrations must already be applied. Do not put credentials in source
+files or commit them.
+
+If `qr_attendance_app` exists but receives `permission denied` errors, connect
+as a PostgreSQL administrator and grant the application role access:
+
+```sql
+GRANT USAGE ON SCHEMA public TO qr_attendance_app;
+GRANT SELECT, INSERT, UPDATE ON ALL TABLES IN SCHEMA public TO qr_attendance_app;
+GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO qr_attendance_app;
+```
 
 ### Frontend Setup
 
@@ -108,6 +128,57 @@ npm run dev
 ```
 
 Follow the terminal output to open the local development URL.
+
+### Start everything with one command
+
+From the project root, set the database credentials and run:
+
+```bash
+export DB_USER=your_postgres_user
+export DB_PASSWORD=your_postgres_password
+./run.sh
+```
+
+The launcher defaults `DB_USER` to `qr_attendance_app`; override it with
+`DB_USER=postgres` if needed. If `DB_PASSWORD` is not exported, the launcher
+prompts for it securely without displaying the password.
+
+On Windows, run the same script from Git Bash. If Maven is missing and
+`winget` is available, the script installs Apache Maven automatically. Press
+`Ctrl+C` to stop both the backend and frontend processes. Database credentials
+must be supplied through environment variables; they are never stored in the
+script.
+
+### MVP demo
+
+1. Open `http://localhost:5173/table/1` (or scan a QR code whose value is the
+   table's numeric ID or its `qr_token`).
+2. Select menu items, open the cart, and place the order.
+3. Use the confirmation order URL to watch status updates.
+4. Set `STAFF_ACCESS_CODE` before starting `run.sh`; the launcher passes it to both
+the backend and frontend. Then open `/staff-access` and enter it. Use the internal kitchen workspace
+   to move the order from `PREPARING`
+   to `READY` or `SERVED`.
+5. Open the internal orders or admin workspace after staff sign-in. Customer
+   routes do not expose these screens.
+
+### HTTP API examples
+
+```bash
+curl http://localhost:8080/api/menu
+curl http://localhost:8080/api/tables/1
+curl -X POST http://localhost:8080/api/orders \
+  -H "Content-Type: application/json" \
+  -d "{\"tableToken\":\"1\",\"items\":[{\"menuItemId\":1,\"quantity\":2}]}"
+curl -X PATCH http://localhost:8080/api/orders/1 \
+  -H "Content-Type: application/json" \
+  -d "{\"status\":\"READY\"}"
+curl http://localhost:8080/api/orders/1
+```
+
+The HTTP adapter resolves the QR token server-side and does not trust a
+client-supplied table ID. Errors return a stable `code` and user-safe
+`message`; database details are logged only on the server.
 
 **Note:** The backend server, database integration, and frontend communication must be implemented and configured before the complete application can run.
 
