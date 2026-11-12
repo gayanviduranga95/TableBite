@@ -1,7 +1,7 @@
+@'
 # Java and Maven
 backend/target/
 *.class
-.tools/
 
 # Node.js
 frontend/node_modules/
@@ -18,5 +18,4 @@ frontend/dist/
 .idea/
 .DS_Store
 Thumbs.db
-
-backend/classpath.txt
+'@ | Set-Content -Encoding utf8 .gitignore
