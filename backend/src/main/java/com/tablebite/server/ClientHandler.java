@@ -40,8 +40,18 @@ public class ClientHandler implements Runnable {
                      client.getInputStream(), StandardCharsets.UTF_8));
              PrintWriter writer = new PrintWriter(new OutputStreamWriter(
                      client.getOutputStream(), StandardCharsets.UTF_8), true)) {
+            client.setSoTimeout(30_000);
+            System.out.println("TCP client connected: " + client.getRemoteSocketAddress());
             String message;
             while ((message = reader.readLine()) != null) {
+                if (message.isBlank()) {
+                    continue;
+                }
+                if (message.length() > 64 * 1024) {
+                    writeError(writer, "MESSAGE_TOO_LARGE",
+                            "Message exceeds the maximum supported size");
+                    continue;
+                }
                 try {
                     JsonNode request = mapper.readTree(message);
                     if (request == null || !request.isObject()
@@ -56,8 +66,9 @@ public class ClientHandler implements Runnable {
                     writeError(writer, "INVALID_JSON", "Invalid JSON request");
                 }
             }
+            System.out.println("TCP client disconnected: " + client.getRemoteSocketAddress());
         } catch (IOException exception) {
-            System.err.println("Client error: " + exception.getMessage());
+            System.err.println("TCP client error: " + exception.getMessage());
         }
     }
 
@@ -82,6 +93,9 @@ public class ClientHandler implements Runnable {
             List<OrderRepository.OrderItemInput> items = parseItems(request.get("items"));
             long orderId = orderRepository.createOrder(
                     positiveLong(request.get("tableId"), "tableId"), items);
+            if (LiveWebSocketServer.getInstance() != null) {
+                LiveWebSocketServer.getInstance().broadcastOrderCreated(orderId, "PENDING");
+            }
             ObjectNode response = mapper.createObjectNode();
             response.put("type", "ORDER_CREATED");
             response.put("success", true);
@@ -108,6 +122,9 @@ public class ClientHandler implements Runnable {
             String status = text(request.get("status"), "status").toUpperCase();
             validateStatus(status);
             orderRepository.updateStatus(orderId, status);
+            if (LiveWebSocketServer.getInstance() != null) {
+                LiveWebSocketServer.getInstance().broadcastOrderStatusChanged(orderId, status);
+            }
             ObjectNode response = mapper.createObjectNode();
             response.put("type", "ORDER_STATUS_UPDATED");
             response.put("orderId", orderId);

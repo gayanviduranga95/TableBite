@@ -2,12 +2,14 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getOrder } from '../../services/orderService'
+import { connectOrderSocket, disconnectSocket } from '../../services/socketService'
 
 const route = useRoute()
 const router = useRouter()
 const order = ref(null)
 const error = ref('')
 const loading = ref(true)
+const socket = ref(null)
 let timer
 const steps = ['PENDING', 'ACCEPTED', 'PREPARING', 'READY', 'SERVED']
 const statusLabel = { PENDING: 'Order received', ACCEPTED: 'Accepted by kitchen', PREPARING: 'Being prepared', READY: 'Ready to enjoy', SERVED: 'Enjoy your meal' }
@@ -25,8 +27,33 @@ async function load() {
     loading.value = false
   }
 }
-onMounted(() => { load(); timer = setInterval(load, 5000) })
-onUnmounted(() => clearInterval(timer))
+
+function handleSocketEvent(event) {
+  if (event.type === 'ORDER_STATUS_CHANGED' && Number(event.orderId) === Number(route.params.id)) {
+    order.value = { ...order.value, status: event.status }
+    if (['SERVED', 'CANCELLED'].includes(event.status)) {
+      clearInterval(timer)
+    }
+  }
+}
+
+onMounted(() => {
+  load()
+  socket.value = connectOrderSocket(Number(route.params.id), handleSocketEvent)
+  socket.value.addEventListener('open', () => {
+    load()
+  })
+  timer = setInterval(() => {
+    if (!socket.value || socket.value.readyState !== WebSocket.OPEN) {
+      load()
+    }
+  }, 5000)
+})
+
+onUnmounted(() => {
+  clearInterval(timer)
+  disconnectSocket(socket.value)
+})
 </script>
 
 <template>

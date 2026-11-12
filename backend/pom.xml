@@ -46,6 +46,13 @@
             <version>2.20.1</version>
         </dependency>
 
+        <!-- Java WebSocket Server -->
+        <dependency>
+            <groupId>org.java-websocket</groupId>
+            <artifactId>Java-WebSocket</artifactId>
+            <version>1.6.0</version>
+        </dependency>
+
         <!-- JUnit 5 Testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -36,5 +36,14 @@ export function useOrderStore() {
     state.cart.splice(0)
   }
 
-  return { state, total, add, remove, clear, setTable }
+  return {
+    state,
+    get total() {
+      return total.value
+    },
+    add,
+    remove,
+    clear,
+    setTable,
+  }
 }

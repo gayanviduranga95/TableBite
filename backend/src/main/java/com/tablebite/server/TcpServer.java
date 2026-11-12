@@ -20,17 +20,21 @@ public class TcpServer {
     public void start() {
         try (ServerSocket serverSocket = new ServerSocket(port)) {
             System.out.println("TableBite TCP Server started on port " + port);
-
             while (!Thread.currentThread().isInterrupted()) {
-                Socket client = serverSocket.accept();
-                System.out.println("Client connected: " +
-                        client.getRemoteSocketAddress());
-
-                executor.execute(new ClientHandler(client));
+                try {
+                    Socket client = serverSocket.accept();
+                    client.setSoTimeout(30_000);
+                    client.setKeepAlive(true);
+                    System.out.println("TCP client connected: " + client.getRemoteSocketAddress());
+                    executor.execute(new ClientHandler(client));
+                } catch (IOException exception) {
+                    if (!Thread.currentThread().isInterrupted()) {
+                        System.err.println("TCP accept failure: " + exception.getMessage());
+                    }
+                }
             }
-
-        } catch (IOException e) {
-            System.err.println("Server error: " + e.getMessage());
+        } catch (IOException exception) {
+            System.err.println("TCP server error: " + exception.getMessage());
         } finally {
             executor.shutdown();
         }

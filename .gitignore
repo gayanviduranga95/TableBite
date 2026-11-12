@@ -18,3 +18,5 @@ frontend/dist/
 .idea/
 .DS_Store
 Thumbs.db
+
+backend/classpath.txt

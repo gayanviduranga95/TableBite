@@ -57,9 +57,9 @@ async function submit() {
       </div>
       <aside class="summary-card">
         <p class="eyebrow">Order summary</p><h2>Ready to order?</h2>
-        <div class="summary-line"><span>Items ({{ itemCount }})</span><strong>Rs {{ store.total.toFixed(2) }}</strong></div>
+        <div class="summary-line"><span>Items ({{ itemCount }})</span><strong>Rs {{ Number(store.total).toFixed(2) }}</strong></div>
         <div class="summary-line muted"><span>Service</span><span>At your table</span></div>
-        <div class="summary-total"><span>Total</span><strong>Rs {{ store.total.toFixed(2) }}</strong></div>
+        <div class="summary-total"><span>Total</span><strong>Rs {{ Number(store.total).toFixed(2) }}</strong></div>
         <p v-if="error" class="error">{{ error }}</p>
         <button class="button checkout-button" :disabled="saving" @click="submit">{{ saving ? 'Sending to kitchen...' : 'Place order  →' }}</button>
         <small class="secure-note">✦ No payment needed · Pay at the counter</small>

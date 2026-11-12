@@ -152,6 +152,9 @@ public final class HttpApiServer {
                     requiredPositiveInt(item, "quantity")));
         }
         long id = orders.createOrder(table.id(), items);
+        if (LiveWebSocketServer.getInstance() != null) {
+            LiveWebSocketServer.getInstance().broadcastOrderCreated(id, "PENDING");
+        }
         ObjectNode response = mapper.createObjectNode();
         response.put("orderId", id);
         response.put("status", "PENDING");
@@ -162,11 +165,14 @@ public final class HttpApiServer {
             throws IOException, SQLException {
         JsonNode body = readJson(exchange);
         String status = requiredText(body, "status").toUpperCase();
-        if (!List.of("PENDING", "PREPARING", "READY", "SERVED", "CANCELLED")
+        if (!List.of("PENDING", "ACCEPTED", "PREPARING", "READY", "SERVED", "CANCELLED")
                 .contains(status)) {
             throw new IllegalArgumentException("Unsupported order status");
         }
         orders.updateStatus(orderId, status);
+        if (LiveWebSocketServer.getInstance() != null) {
+            LiveWebSocketServer.getInstance().broadcastOrderStatusChanged(orderId, status);
+        }
         ObjectNode response = mapper.createObjectNode();
         response.put("orderId", orderId);
         response.put("status", status);

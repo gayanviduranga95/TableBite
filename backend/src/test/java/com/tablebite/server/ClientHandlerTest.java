@@ -75,6 +75,34 @@ class ClientHandlerTest {
         }
     }
 
+    @Test
+    void rejectsOversizedPayloadsAndKeepsConnectionUsable() throws Exception {
+        OrderRepository repository = new OrderRepository();
+
+        try (ServerSocket serverSocket = new ServerSocket(0);
+             Socket client = new Socket("localhost", serverSocket.getLocalPort())) {
+            Thread handlerThread = new Thread(() -> acceptAndRun(serverSocket, repository));
+            handlerThread.start();
+            try (PrintWriter writer = new PrintWriter(new OutputStreamWriter(client.getOutputStream(), StandardCharsets.UTF_8), true);
+                 BufferedReader reader = new BufferedReader(new InputStreamReader(client.getInputStream(), StandardCharsets.UTF_8))) {
+                StringBuilder payload = new StringBuilder();
+                payload.append("{\"type\":\"PING\",\"message\":\"");
+                payload.append("x".repeat(200_000));
+                payload.append("\"}");
+
+                writer.println(payload);
+                JsonNode error = MAPPER.readTree(reader.readLine());
+                assertEquals("ERROR", error.get("type").asText());
+                assertEquals("MESSAGE_TOO_LARGE", error.get("code").asText());
+
+                writer.println("{\"type\":\"PING\"}");
+                JsonNode pong = MAPPER.readTree(reader.readLine());
+                assertEquals("PONG", pong.get("type").asText());
+            }
+            handlerThread.join(1_000);
+        }
+    }
+
     private JsonNode send(String request, OrderRepository repository) throws Exception {
         try (ServerSocket serverSocket = new ServerSocket(0);
              Socket client = new Socket("localhost", serverSocket.getLocalPort())) {

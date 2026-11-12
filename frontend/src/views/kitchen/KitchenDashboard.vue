@@ -1,16 +1,47 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { getOrders, updateOrderStatus } from '../../services/orderService'
+import { connectKitchenSocket, disconnectSocket } from '../../services/socketService'
+
 const orders = ref([])
 const error = ref('')
+const socket = ref(null)
+
 const counts = computed(() => ({
   pending: orders.value.filter((order) => order.status === 'PENDING').length,
   preparing: orders.value.filter((order) => order.status === 'PREPARING').length,
   ready: orders.value.filter((order) => order.status === 'READY').length,
 }))
-async function load() { try { orders.value = await getOrders() } catch (exception) { error.value = exception.message } }
-async function update(order, status) { try { await updateOrderStatus(order.id, status); await load() } catch (exception) { error.value = exception.message } }
-onMounted(load)
+
+async function load() {
+  try {
+    orders.value = await getOrders()
+  } catch (exception) {
+    error.value = exception.message
+  }
+}
+
+async function update(order, status) {
+  try {
+    await updateOrderStatus(order.id, status)
+    await load()
+  } catch (exception) {
+    error.value = exception.message
+  }
+}
+
+onMounted(async () => {
+  await load()
+  socket.value = connectKitchenSocket((event) => {
+    if (event.type === 'ORDER_CREATED') {
+      load()
+    }
+  })
+})
+
+onUnmounted(() => {
+  disconnectSocket(socket.value)
+})
 </script>
 <template>
   <section class="staff-page">
