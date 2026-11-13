@@ -1,5 +1,12 @@
-# Vue 3 + Vite
+# TableBite frontend
 
-This template should help get you started developing with Vue 3 in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+Vue 3 + Vite + Tailwind CSS 4. See the [main README](../README.md) for setup.
 
-Learn more about IDE Support for Vue in the [Vue Docs Scaling up Guide](https://vuejs.org/guide/scaling-up/tooling.html#ide-support).
+```bash
+npm install
+npm run dev          # http://localhost:5173 (proxies /api, /uploads, /ws to the Java backend)
+npm run dev:https    # same, over HTTPS - needed for live phone-camera QR scanning on the LAN
+npm run build        # production build in dist/
+```
+
+Proxy targets and API URLs can be changed through `.env.local` (see `.env.example`).

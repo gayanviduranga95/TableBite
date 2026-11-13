@@ -84,16 +84,27 @@ if [[ -z "${DB_PASSWORD:-}" ]]; then
   export DB_PASSWORD
 fi
 
-if [[ -z "${STAFF_ACCESS_CODE:-}" ]]; then
-  read -r -s -p "Internal staff access code: " STAFF_ACCESS_CODE
-  echo
-  if [[ -z "$STAFF_ACCESS_CODE" ]]; then
-    echo "Error: Internal staff access code is required." >&2
-    exit 1
-  fi
+# Code the kitchen types on /kitchen (default: kitchen123 - set your own).
+export KITCHEN_ACCESS_CODE="${KITCHEN_ACCESS_CODE:-kitchen123}"
+
+# The backend needs JDK 21+. Maven uses JAVA_HOME, which on some machines still
+# points at an old JDK 8, so pick a suitable JDK automatically when needed.
+java_major() {
+  "$1/bin/java" -version 2>&1 | head -1 | sed -E 's/.*version "([0-9]+).*//'
+}
+if [[ -z "${JAVA_HOME:-}" || ! -x "$JAVA_HOME/bin/java" || "$(java_major "$JAVA_HOME")" -lt 21 ]]; then
+  for candidate in "/c/Program Files/Eclipse Adoptium"/jdk-2* "/c/Program Files/Java"/jdk-2* "/c/Program Files/Microsoft"/jdk-2* /usr/lib/jvm/*-2*; do
+    if [[ -x "$candidate/bin/java" && "$(java_major "$candidate")" -ge 21 ]]; then
+      export JAVA_HOME="$candidate"
+      break
+    fi
+  done
 fi
-export STAFF_ACCESS_CODE
-export VITE_STAFF_ACCESS_CODE="$STAFF_ACCESS_CODE"
+if [[ -z "${JAVA_HOME:-}" || "$(java_major "$JAVA_HOME")" -lt 21 ]]; then
+  echo "Error: JDK 21 or newer is required. Install it and set JAVA_HOME." >&2
+  exit 1
+fi
+echo "Using Java from $JAVA_HOME"
 
 backend_pid=""
 frontend_pid=""
@@ -110,18 +121,18 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-echo "Starting backend on HTTP ${HTTP_PORT:-8080} and TCP 5000..."
+echo "Starting backend (HTTP ${HTTP_PORT:-8080}, WebSocket ${WEBSOCKET_PORT:-8081}, TCP ${TCP_PORT:-5000})..."
 (
   cd "$BACKEND_DIR"
   mvn -q compile dependency:build-classpath \
     -Dmdep.outputFile=target/runtime-classpath.txt \
     -Dmdep.includeScope=runtime
   runtime_classpath="$(tr -d '\r\n' < target/runtime-classpath.txt)"
-  java -cp "target/classes;${runtime_classpath}" com.tablebite.Main
+  "$JAVA_HOME/bin/java" -cp "target/classes;${runtime_classpath}" com.tablebite.Main
 ) &
 backend_pid=$!
 
-if [[ ! -d "$FRONTEND_DIR/node_modules" ]]; then
+if [[ ! -d "$FRONTEND_DIR/node_modules/jsqr" || ! -d "$FRONTEND_DIR/node_modules/qrcode" ]]; then
   echo "Installing frontend dependencies..."
   (cd "$FRONTEND_DIR" && npm install)
 fi
@@ -133,7 +144,13 @@ echo "Starting frontend..."
 ) &
 frontend_pid=$!
 
-echo "TableBite is running. Open http://localhost:5173/table/1"
+echo ""
+echo "TableBite is starting:"
+echo "  Customer app : http://localhost:5173/"
+echo "  Demo table   : http://localhost:5173/table/tablebite-demo-t01-8c9d4d1e"
+echo "  Kitchen      : http://localhost:5173/kitchen  (kitchen code: $KITCHEN_ACCESS_CODE)"
+echo "  Admin        : http://localhost:5173/staff/login  (admin@tablebite.local / Admin@12345 on first run)"
+echo "  Phones on the same Wi-Fi: use the 'Network' URL Vite prints below."
 echo "Press Ctrl+C to stop both services."
 
 wait "$backend_pid" "$frontend_pid"

@@ -6,6 +6,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.tablebite.database.MenuRepository;
 import com.tablebite.database.OrderRepository;
+import com.tablebite.model.Order;
+import com.tablebite.model.OrderStatus;
+import com.tablebite.service.NotificationService;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -93,9 +96,7 @@ public class ClientHandler implements Runnable {
             List<OrderRepository.OrderItemInput> items = parseItems(request.get("items"));
             long orderId = orderRepository.createOrder(
                     positiveLong(request.get("tableId"), "tableId"), items);
-            if (LiveWebSocketServer.getInstance() != null) {
-                LiveWebSocketServer.getInstance().broadcastOrderCreated(orderId, "PENDING");
-            }
+            NotificationService.orderChanged(orderId, true);
             ObjectNode response = mapper.createObjectNode();
             response.put("type", "ORDER_CREATED");
             response.put("success", true);
@@ -119,12 +120,9 @@ public class ClientHandler implements Runnable {
     private void handleStatusUpdate(JsonNode request, PrintWriter writer) {
         try {
             long orderId = positiveLong(request.get("orderId"), "orderId");
-            String status = text(request.get("status"), "status").toUpperCase();
-            validateStatus(status);
+            String status = OrderStatus.parse(text(request.get("status"), "status")).name();
             orderRepository.updateStatus(orderId, status);
-            if (LiveWebSocketServer.getInstance() != null) {
-                LiveWebSocketServer.getInstance().broadcastOrderStatusChanged(orderId, status);
-            }
+            NotificationService.orderChanged(orderId, false);
             ObjectNode response = mapper.createObjectNode();
             response.put("type", "ORDER_STATUS_UPDATED");
             response.put("orderId", orderId);
@@ -146,7 +144,8 @@ public class ClientHandler implements Runnable {
 
     private void handleGetOrders(PrintWriter writer) {
         try {
-            writer.println(mapper.writeValueAsString(orderRepository.findAll()));
+            writer.println(mapper.writeValueAsString(
+                    orderRepository.findAll().stream().map(Order::withoutToken).toList()));
         } catch (SQLException | JsonProcessingException exception) {
             writeError(writer, "ORDERS_FETCH_FAILED", "Orders could not be loaded");
         }
@@ -154,7 +153,7 @@ public class ClientHandler implements Runnable {
 
     private void handleGetOrder(JsonNode request, PrintWriter writer, boolean statusOnly) {
         try {
-            OrderRepository.OrderDetails order = orderRepository.findById(
+            Order order = orderRepository.findById(
                     positiveLong(request.get("orderId"), "orderId"));
             if (order == null) {
                 writeError(writer, "ORDER_NOT_FOUND", "Order was not found");
@@ -167,7 +166,7 @@ public class ClientHandler implements Runnable {
                 response.put("status", order.status());
                 writer.println(mapper.writeValueAsString(response));
             } else {
-                writer.println(mapper.writeValueAsString(order));
+                writer.println(mapper.writeValueAsString(order.withoutToken()));
             }
         } catch (IllegalArgumentException exception) {
             writeError(writer, "VALIDATION_ERROR", exception.getMessage());
@@ -218,13 +217,6 @@ public class ClientHandler implements Runnable {
             throw new IllegalArgumentException(field + " is required");
         }
         return value.asText();
-    }
-
-    private void validateStatus(String status) {
-        if (!List.of("PENDING", "ACCEPTED", "PREPARING", "READY", "SERVED", "CANCELLED")
-                .contains(status)) {
-            throw new IllegalArgumentException("Unsupported order status");
-        }
     }
 
     private void writeError(PrintWriter writer, String code, String message) {
