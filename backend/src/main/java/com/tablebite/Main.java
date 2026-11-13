@@ -39,13 +39,14 @@ public class Main {
             LiveWebSocketServer.installInstance(webSocketServer);
             webSocketServer.start();
 
-            Thread tcpThread = new Thread(() -> new TcpServer(tcpPort).start(), "tablebite-tcp");
-            tcpThread.setDaemon(true);
-            tcpThread.start();
+            // Binds to TCP_HOST (127.0.0.1 by default); see TcpServer.Settings.
+            TcpServer tcpServer = new TcpServer(TcpServer.Settings.fromEnvironment(tcpPort), auth);
+            tcpServer.start();
 
             CountDownLatch latch = new CountDownLatch(1);
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 LOG.info("Shutting down TableBite");
+                tcpServer.stop();
                 httpServer.stop();
                 try {
                     webSocketServer.stop(1000);

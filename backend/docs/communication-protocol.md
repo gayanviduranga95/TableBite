@@ -97,18 +97,34 @@ Event types: `ORDER_CREATED`, `ORDER_STATUS_CHANGED`, `PAYMENT_UPDATED`.
 The legacy `?accessCode=` / `"channel":"kitchen"` subscription still works when
 `STAFF_ACCESS_CODE` is configured.
 
-## 3. Raw TCP protocol (port 5000)
+## 3. Raw TCP protocol (port 5000, bound to 127.0.0.1 by default)
 
-Newline-delimited JSON, one request per line (max 64 KB), 30 s idle timeout.
+Newline-delimited JSON (UTF-8), one request per line, one response line per request.
+Limits: 64 KB per message (checked while reading), 30 s without a complete message
+closes the connection (`IDLE_TIMEOUT`). Configure with `TCP_HOST`, `TCP_MAX_CLIENTS`,
+`TCP_MAX_QUEUE`, `TCP_IDLE_TIMEOUT_SECONDS`.
 
-| Request | Response |
-|---|---|
-| `{"type":"PING"}` | `{"type":"PONG","message":"TableBite server is running"}` |
-| `{"type":"GET_MENU"}` | array of available dishes |
-| `{"type":"NEW_ORDER","tableId":1,"items":[{"menuItemId":1,"quantity":2}]}` | `{"type":"ORDER_CREATED","success":true,"orderId":…,"status":"PENDING"}` |
-| `{"type":"ORDER_STATUS_UPDATE","orderId":1,"status":"CONFIRMED"}` | `{"type":"ORDER_STATUS_UPDATED",…}` |
-| `{"type":"GET_ORDERS"}` / `{"type":"GET_ORDER","orderId":1}` / `GET_ORDER_STATUS` | order data |
+A connection starts anonymous. Send `AUTH` once to act as a user; roles or user ids
+sent in other messages are ignored.
 
-Errors: `{"type":"ERROR","success":false,"code":"…","message":"…"}`; the connection
-stays usable after an error. TCP orders and status changes are also pushed to
-WebSocket subscribers.
+| Request | Access | Response |
+|---|---|---|
+| `{"type":"PING"}` | anyone | `{"type":"PONG","message":"TableBite server is running"}` |
+| `{"type":"GET_MENU"}` | anyone | array of available dishes |
+| `{"type":"AUTH","token":"<session token>"}` or `{"type":"AUTH","accessCode":"<kitchen code>"}` | anyone | `{"type":"AUTH_OK","success":true,"userId":…,"role":"KITCHEN","name":…}` |
+| `{"type":"NEW_ORDER","tableToken":"<table QR token>","items":[{"menuItemId":1,"quantity":2}]}` | anyone | `{"type":"ORDER_CREATED","success":true,"orderId":…,"orderNumber":…,"status":"PENDING","trackingToken":…}` |
+| `{"type":"NEW_ORDER","tableId":1,"items":[…]}` | staff | `{"type":"ORDER_CREATED","success":true,"orderId":…,"status":"PENDING"}` |
+| `{"type":"ORDER_STATUS_UPDATE","orderId":1,"status":"CONFIRMED","reason":"…"}` | staff (same role rules as `PATCH /orders/{id}`) | `{"type":"ORDER_STATUS_UPDATED","orderId":1,"status":"CONFIRMED"}` |
+| `{"type":"GET_ORDERS"}` | staff | array of orders |
+| `{"type":"GET_ORDER","orderId":1,"trackingToken":"…"}` / `GET_ORDER_STATUS` | staff, the signed-in owner, or the tracking-token holder | order / `{"type":"ORDER_STATUS",…}` |
+
+Errors always look like `{"type":"ERROR","success":false,"code":"…","message":"…"}`.
+Codes: `INVALID_JSON`, `VALIDATION_ERROR`, `UNKNOWN_MESSAGE_TYPE`, `MESSAGE_TOO_LARGE`,
+`AUTH_REQUIRED`, `AUTH_FAILED`, `FORBIDDEN`, `TOO_MANY_REQUESTS`, `ORDER_NOT_FOUND`,
+`TABLE_NOT_FOUND`, `INTERNAL_ERROR`, `*_FAILED` (database errors). The connection stays
+usable after an error, except: `IDLE_TIMEOUT`, `MESSAGE_TOO_LARGE` for a stream with no
+newline in 1 MB, and 5 failed `AUTH` attempts all close it.
+
+Server-initiated lines: `SERVER_BUSY` error (all workers and queue slots full, then the
+connection closes) and `{"type":"SERVER_SHUTDOWN"}` (sent before a graceful close).
+TCP orders and status changes are also pushed to WebSocket subscribers.

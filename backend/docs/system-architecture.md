@@ -41,9 +41,11 @@
 
 ## Concurrency (OS / network programming concepts)
 
-* **Thread pools** – the HTTP server uses a fixed pool of 16 worker threads, the TCP
-  server a pool of 10 (`ExecutorService`). Each TCP connection is handled by a
-  `ClientHandler` runnable with a 30 s socket timeout and a 64 KB message limit.
+* **Thread pools** – the HTTP server uses a fixed pool of 16 worker threads. The TCP
+  server has one acceptor thread plus a bounded `ThreadPoolExecutor` (default 32
+  workers, 16 waiting connections; beyond that clients get `SERVER_BUSY`). Each TCP
+  connection is handled by a `ClientHandler` runnable with a 30 s idle timeout and a
+  64 KB message limit enforced while reading; `TcpServer.stop()` shuts down gracefully.
 * **WebSocket server** – runs its own selector thread; subscriber sets are
   `ConcurrentHashMap` key-sets so publishes from HTTP threads are thread-safe.
 * **Database concurrency** – order creation locks the dishes (`SELECT … FOR SHARE`),
