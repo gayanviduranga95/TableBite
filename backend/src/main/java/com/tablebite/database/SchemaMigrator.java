@@ -27,7 +27,8 @@ public final class SchemaMigrator {
             "V1__create_tables.sql",
             "V2__seed_initial_data.sql",
             "V3__restaurant_platform.sql",
-            "V4__seed_full_menu.sql");
+            "V4__seed_full_menu.sql",
+            "V5__update_default_tagline.sql");
 
     private SchemaMigrator() {
     }

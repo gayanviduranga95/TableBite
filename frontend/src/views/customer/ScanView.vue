@@ -81,7 +81,7 @@ async function submitManual() {
     <div class="mx-auto max-w-lg text-center">
       <span class="mx-auto grid h-14 w-14 place-items-center rounded-2xl bg-brand-500 text-white shadow-brand"><QrCode class="h-7 w-7" /></span>
       <h1 class="mt-4 font-display text-4xl font-normal sm:text-5xl">Scan your table</h1>
-      <p class="mt-2 text-ink-500">Point your camera at the QR code on your table. We'll set your table number automatically.</p>
+      <p class="mt-2 text-ink-500">Point the camera at the QR code on your table.</p>
     </div>
 
     <div class="mx-auto mt-8 max-w-lg">

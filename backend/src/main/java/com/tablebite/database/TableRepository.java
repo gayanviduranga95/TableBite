@@ -123,6 +123,48 @@ public class TableRepository {
         });
     }
 
+    /** Releases a QR-selected table only when it has no active orders. */
+    public boolean makeAvailableIfIdle(String qrToken) throws SQLException {
+        return Jdbc.inTransaction(connection -> {
+            long tableId;
+            String status;
+            try (PreparedStatement statement = connection.prepareStatement("""
+                    SELECT table_id, status FROM restaurant_tables
+                    WHERE qr_token = ? AND deleted_at IS NULL FOR UPDATE""")) {
+                statement.setString(1, qrToken);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (!result.next()) {
+                        return false;
+                    }
+                    tableId = result.getLong("table_id");
+                    status = result.getString("status");
+                }
+            }
+            if ("AVAILABLE".equals(status)) {
+                return true;
+            }
+            if (!"OCCUPIED".equals(status)) {
+                return false;
+            }
+            try (PreparedStatement statement = connection.prepareStatement("""
+                    SELECT 1 FROM orders WHERE table_id = ?
+                      AND status IN ('PENDING','CONFIRMED','PREPARING','READY','SERVED') LIMIT 1""")) {
+                statement.setLong(1, tableId);
+                try (ResultSet result = statement.executeQuery()) {
+                    if (result.next()) {
+                        return false;
+                    }
+                }
+            }
+            try (PreparedStatement statement = connection.prepareStatement("""
+                    UPDATE restaurant_tables SET status = 'AVAILABLE'
+                    WHERE table_id = ? AND status = 'OCCUPIED'""")) {
+                statement.setLong(1, tableId);
+                return statement.executeUpdate() > 0;
+            }
+        });
+    }
+
     public RestaurantTable updateToken(long id, String qrToken) throws SQLException {
         int updated = Jdbc.withConnection(connection -> {
             try (PreparedStatement statement = connection.prepareStatement(

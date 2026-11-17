@@ -102,14 +102,13 @@ onMounted(load)
       <RouterLink to="/scan" class="btn btn-sm bg-white/10 text-white hover:bg-white/20"><ScanLine class="h-4 w-4" /> Change</RouterLink>
     </div>
     <div v-else class="mb-6 flex flex-col gap-3 rounded-2xl border border-brand-100 bg-brand-50 p-4 sm:flex-row sm:items-center">
-      <p class="flex-1 text-sm text-ink-700"><strong class="text-ink-900">Sitting at a table?</strong> Scan its QR code so your order goes to the right table. You can also order takeaway.</p>
+      <p class="flex-1 text-sm text-ink-700">Scan the table QR code for dine-in, or choose takeaway at checkout.</p>
       <RouterLink to="/scan" class="btn-primary btn-sm self-start sm:self-auto"><ScanLine class="h-4 w-4" /> Scan table QR</RouterLink>
     </div>
 
     <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
       <div>
-        <p class="eyebrow">Our menu</p>
-        <h1 class="mt-1 font-display text-4xl font-normal sm:text-5xl">Made fresh, made for you</h1>
+        <h1 class="font-display text-4xl font-normal sm:text-5xl">Menu</h1>
       </div>
     </div>
 

@@ -42,7 +42,7 @@ onMounted(async () => {
     <div v-else class="mx-auto grid max-w-4xl grid-cols-2 gap-6 p-6 print:max-w-none print:gap-0 print:p-0">
       <section v-for="card in cards" :key="card.id" class="flex break-inside-avoid flex-col items-center rounded-3xl border-2 border-dashed border-ink-200 bg-cream p-8 text-center print:h-[13.5cm] print:rounded-none print:border-ink-300">
         <div class="flex items-center gap-2"><BrandMark size="h-8 w-8" /><span class="text-xl font-extrabold">{{ settings.state.restaurant_name }}</span></div>
-        <p class="mt-2 text-xs font-extrabold tracking-[0.2em] text-brand-600 uppercase">Scan · Order · Enjoy</p>
+        <p class="mt-2 text-xs font-extrabold tracking-[0.2em] text-brand-600 uppercase">Scan to order</p>
         <img :src="card.qr" :alt="`QR code for table ${card.tableNumber}`" class="mt-4 w-48 rounded-2xl bg-white p-2">
         <p class="mt-4 text-4xl font-extrabold">Table {{ card.tableNumber }}</p>
         <p class="mt-1 text-sm text-ink-500">Point your phone camera at the code to see the menu and order.</p>

@@ -199,7 +199,7 @@ CREATE TABLE IF NOT EXISTS restaurant_settings (
 
 INSERT INTO restaurant_settings (setting_key, setting_value) VALUES
     ('restaurant_name', 'TableBite'),
-    ('tagline', 'Fresh food, served to your table'),
+    ('tagline', 'Restaurant menu and ordering'),
     ('address', '42 Galle Road, Colombo 03'),
     ('phone', '+94 11 234 5678'),
     ('opening_hours', 'Daily 10:00 – 23:00'),

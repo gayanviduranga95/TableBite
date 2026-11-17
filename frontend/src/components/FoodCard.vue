@@ -45,13 +45,13 @@ function add() {
     </RouterLink>
     <div class="flex flex-1 flex-col p-4">
       <div class="mb-1 flex items-center gap-2 text-[11px] font-bold text-ink-400">
-        <span>{{ item.category || 'Chef special' }}</span>
+        <span v-if="item.category">{{ item.category }}</span>
         <span class="inline-flex items-center gap-1"><Clock class="h-3 w-3" />{{ item.prepMinutes }} min</span>
         <Leaf v-if="item.vegetarian" class="h-3.5 w-3.5 text-leaf-500" aria-label="Vegetarian" />
         <Flame v-if="item.spicy" class="h-3.5 w-3.5 text-red-500" aria-label="Spicy" />
       </div>
       <RouterLink :to="`/menu/${item.id}`" class="font-bold leading-snug text-ink-900 hover:text-brand-700">{{ item.name }}</RouterLink>
-      <p class="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-500">{{ item.description || 'Freshly prepared by our kitchen.' }}</p>
+      <p v-if="item.description" class="mt-1 line-clamp-2 text-xs leading-relaxed text-ink-500">{{ item.description }}</p>
       <div class="mt-auto flex flex-wrap items-center justify-between gap-2 pt-4">
         <strong class="text-[15px] font-extrabold whitespace-nowrap text-ink-900 sm:text-base">{{ money(item.price) }}</strong>
         <QuantityStepper
