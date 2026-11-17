@@ -82,7 +82,7 @@ onMounted(load)
             <span v-if="item.spicy" class="inline-flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600"><Flame class="h-3.5 w-3.5" /> Spicy</span>
             <span :class="item.available ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700'" class="rounded-full px-3 py-1 text-xs font-bold">{{ item.available ? 'Available now' : 'Sold out today' }}</span>
           </div>
-          <p class="mt-5 text-base leading-relaxed text-ink-600">{{ item.description || 'Freshly prepared by our kitchen.' }}</p>
+          <p v-if="item.description" class="mt-5 text-base leading-relaxed text-ink-600">{{ item.description }}</p>
           <p class="mt-6 text-3xl font-extrabold">{{ money(item.price) }}</p>
 
           <label class="mt-6 block">

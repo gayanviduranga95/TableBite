@@ -116,7 +116,7 @@ onMounted(async () => {
       <button v-if="cart.state.items.length" class="btn-ghost btn-sm text-red-600 hover:bg-red-50 hover:text-red-700" @click="clearCart"><Trash2 class="h-4 w-4" /> Clear cart</button>
     </div>
 
-    <EmptyState v-if="!cart.state.items.length" class="mt-8" :icon="ShoppingBag" title="Your cart is empty" message="Add something delicious from the menu and it will show up here.">
+    <EmptyState v-if="!cart.state.items.length" class="mt-8" :icon="ShoppingBag" title="Your cart is empty" message="Browse the menu to add items.">
       <RouterLink to="/menu" class="btn-primary">Browse the menu</RouterLink>
     </EmptyState>
 

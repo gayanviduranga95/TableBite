@@ -60,7 +60,7 @@ onMounted(load)
       <button class="btn-primary" @click="load"><RefreshCw class="h-4 w-4" /> Try again</button>
     </EmptyState>
 
-    <EmptyState v-else-if="!orders.length" class="mt-8" :icon="Receipt" title="No orders yet" message="When you place an order it will appear here so you can track it live.">
+    <EmptyState v-else-if="!orders.length" class="mt-8" :icon="Receipt" title="No orders yet" message="Orders from this device will appear here.">
       <RouterLink to="/menu" class="btn-primary">Start an order</RouterLink>
     </EmptyState>
 

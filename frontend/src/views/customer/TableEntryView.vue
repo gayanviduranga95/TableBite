@@ -25,7 +25,7 @@ onMounted(async () => {
     }
     cart.setTable(table.value)
     state.value = 'ok'
-    toast.success(`Welcome! You're ordering for Table ${table.value.tableNumber}`)
+    toast.success(`Table ${table.value.tableNumber} selected`)
     setTimeout(() => router.replace('/menu'), 900)
   } catch (exception) {
     state.value = 'error'
@@ -42,7 +42,7 @@ onMounted(async () => {
       <template v-if="state === 'loading'">
         <span class="mx-auto grid h-20 w-20 place-items-center rounded-3xl bg-brand-50 text-brand-500"><LoaderCircle class="h-9 w-9 animate-spin" /></span>
         <h1 class="mt-6 text-2xl font-extrabold">Finding your table…</h1>
-        <p class="mt-2 text-ink-500">Just a moment while we set up your menu.</p>
+        <p class="mt-2 text-ink-500">Loading table…</p>
       </template>
       <template v-else-if="state === 'ok'">
         <span class="mx-auto grid h-20 w-20 animate-pop place-items-center rounded-3xl bg-leaf-500 text-white shadow-lg"><CircleCheck class="h-10 w-10" /></span>
@@ -56,7 +56,7 @@ onMounted(async () => {
         <p class="mt-2 text-ink-500">{{ message }}</p>
         <div class="mt-6 flex flex-col gap-2 sm:flex-row sm:justify-center">
           <RouterLink to="/scan" class="btn-primary"><ScanLine class="h-4 w-4" /> Scan again</RouterLink>
-          <RouterLink to="/menu" class="btn-light">Just browse the menu</RouterLink>
+          <RouterLink to="/menu" class="btn-light">Browse menu</RouterLink>
         </div>
       </template>
     </div>

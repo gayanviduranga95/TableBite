@@ -52,6 +52,12 @@ public class TableService {
         return table;
     }
 
+    /** Releases the scanned table when it has no active orders. */
+    public boolean leave(String token) throws SQLException {
+        resolveToken(token);
+        return tables.makeAvailableIfIdle(token);
+    }
+
     public List<RestaurantTable> list() throws SQLException {
         return tables.findAll();
     }

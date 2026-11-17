@@ -1,8 +1,8 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, reactive, ref, watch } from 'vue'
 import {
   Armchair, Copy, Download, ExternalLink, History, LoaderCircle, Pencil, Plus, Printer,
-  RefreshCw, Trash2, TriangleAlert,
+  RefreshCw, Trash2,
 } from 'lucide-vue-next'
 import * as service from '../../services/orderService'
 import { useSettings } from '../../stores/settingsStore'
@@ -26,8 +26,6 @@ const tone = {
   AVAILABLE: 'bg-emerald-50 text-emerald-700', OCCUPIED: 'bg-brand-50 text-brand-700',
   RESERVED: 'bg-sky-50 text-sky-700', OUT_OF_SERVICE: 'bg-stone-100 text-stone-500',
 }
-const localOnly = computed(() => /\/\/(localhost|127\.0\.0\.1)(:|\/|$)/.test(settings.qrBaseUrl))
-
 const urlFor = (table) => tableUrl(settings.qrBaseUrl, table.qrToken)
 
 async function renderQr() {
@@ -147,11 +145,6 @@ async function showOrders(table) {
         <RouterLink to="/admin/tables/print" target="_blank" class="btn-light"><Printer class="h-4 w-4" /> Print all</RouterLink>
         <button class="btn-primary" @click="openForm()"><Plus class="h-4 w-4" /> Add table</button>
       </div>
-    </div>
-
-    <div v-if="localOnly" class="mt-5 flex gap-3 rounded-2xl bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
-      <TriangleAlert class="h-5 w-5 shrink-0 text-amber-600" />
-      <p>QR codes currently point to <strong>{{ settings.qrBaseUrl }}</strong>, which phones can't open. Set the <RouterLink to="/admin/settings" class="font-bold underline">public ordering URL</RouterLink> (for example <code>http://192.168.1.20:5173</code>) before printing.</p>
     </div>
 
     <div v-if="loading" class="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4"><div v-for="n in 8" :key="n" class="skeleton h-80 rounded-3xl" /></div>

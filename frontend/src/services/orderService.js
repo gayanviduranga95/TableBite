@@ -16,6 +16,7 @@ export const getMenuItem = (id) => api.get(`/menu/${id}`)
 export const getCategories = () => api.get('/categories')
 export const getTable = (token) => api.get(`/tables/${encodeURIComponent(token)}`)
 export const lookupTable = (tableNumber) => api.post('/tables/lookup', { tableNumber })
+export const leaveTable = (token) => api.post(`/tables/${encodeURIComponent(token)}/leave`)
 
 // ---------- auth
 export const register = (data) => api.post('/auth/register', data)

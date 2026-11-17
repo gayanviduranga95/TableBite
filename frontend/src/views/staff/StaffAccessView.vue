@@ -47,10 +47,6 @@ async function submit() {
       <div class="absolute inset-0 bg-gradient-to-br from-ink-900/90 via-ink-900/60 to-brand-900/50" />
       <div class="relative flex h-full flex-col justify-between p-12 text-white">
         <div class="flex items-center gap-3"><BrandMark /><span class="text-xl font-extrabold">TableBite</span></div>
-        <div>
-          <p class="font-display text-5xl leading-tight">Run the whole floor<br>from one screen.</p>
-          <p class="mt-4 max-w-md text-ink-200">Live orders, kitchen display, table QR codes, payments and analytics — built for busy services.</p>
-        </div>
       </div>
     </div>
     <div class="flex items-center justify-center bg-cream p-6">

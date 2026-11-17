@@ -3,7 +3,7 @@ import { getSettings } from '../services/orderService'
 
 const state = reactive({
   restaurant_name: 'TableBite',
-  tagline: 'Fresh food, served to your table',
+  tagline: 'Restaurant menu and ordering',
   address: '',
   phone: '',
   opening_hours: '',

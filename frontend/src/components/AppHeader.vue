@@ -1,15 +1,39 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import { MapPin, Receipt, ScanLine, ShoppingBag } from 'lucide-vue-next'
+import { LogOut, MapPin, Receipt, ScanLine, ShoppingBag } from 'lucide-vue-next'
 import { useOrderStore } from '../stores/orderStore'
 import { useSettings } from '../stores/settingsStore'
+import { useConfirm } from '../composables/useConfirm'
+import { useToast } from '../composables/useToast'
+import { leaveTable as releaseTable } from '../services/orderService'
 import BrandMark from './BrandMark.vue'
 
 const route = useRoute()
 const cart = useOrderStore()
 const settings = useSettings()
+const { confirm } = useConfirm()
+const toast = useToast()
 const transparent = computed(() => route.path === '/')
+
+async function leaveTable() {
+  const table = cart.state.table
+  if (!table) return
+  if (cart.count.value && !(await confirm({
+      title: `Leave Table ${table.tableNumber}?`,
+      message: 'Your cart will stay saved. Scan another table QR before placing a dine-in order.',
+      confirmText: 'Leave table',
+      danger: true,
+    }))) return
+  try {
+    const result = await releaseTable(table.token)
+    cart.setTable(null)
+    if (result.available) toast.success(`Table ${table.tableNumber} is available again`)
+    else toast.info(`Table ${table.tableNumber} was not made available; active orders or staff status may keep it reserved`)
+  } catch (error) {
+    toast.error(error)
+  }
+}
 
 const links = [
   { to: '/', label: 'Home' },
@@ -42,6 +66,17 @@ const links = [
       </nav>
 
       <div class="ml-auto flex items-center gap-2">
+        <button
+          v-if="cart.state.table"
+          type="button"
+          class="btn-icon"
+          :class="transparent ? 'text-white hover:bg-white/10' : 'btn-ghost'"
+          :aria-label="`Leave Table ${cart.state.table.tableNumber}`"
+          title="Leave table"
+          @click="leaveTable"
+        >
+          <LogOut class="h-5 w-5" />
+        </button>
         <RouterLink
           v-if="cart.state.table"
           to="/menu"

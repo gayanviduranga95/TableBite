@@ -73,7 +73,7 @@ if ! command -v npm >/dev/null 2>&1; then
   exit 1
 fi
 
-export DB_USER="${DB_USER:-qr_attendance_app}"
+export DB_USER="${DB_USER:-postgres}"
 if [[ -z "${DB_PASSWORD:-}" ]]; then
   read -r -s -p "PostgreSQL password for ${DB_USER}: " DB_PASSWORD
   echo
@@ -90,7 +90,7 @@ export KITCHEN_ACCESS_CODE="${KITCHEN_ACCESS_CODE:-kitchen123}"
 # The backend needs JDK 21+. Maven uses JAVA_HOME, which on some machines still
 # points at an old JDK 8, so pick a suitable JDK automatically when needed.
 java_major() {
-  "$1/bin/java" -version 2>&1 | head -1 | sed -E 's/.*version "([0-9]+).*//'
+  "$1/bin/java" -version 2>&1 | head -1 | sed -E 's/.*version "([0-9]+).*/\1/'
 }
 if [[ -z "${JAVA_HOME:-}" || ! -x "$JAVA_HOME/bin/java" || "$(java_major "$JAVA_HOME")" -lt 21 ]]; then
   for candidate in "/c/Program Files/Eclipse Adoptium"/jdk-2* "/c/Program Files/Java"/jdk-2* "/c/Program Files/Microsoft"/jdk-2* /usr/lib/jvm/*-2*; do
@@ -107,17 +107,21 @@ fi
 echo "Using Java from $JAVA_HOME"
 
 backend_pid=""
-frontend_pid=""
+http_frontend_pid=""
+https_frontend_pid=""
 
 cleanup() {
   trap - EXIT INT TERM
-  if [[ -n "$frontend_pid" ]] && kill -0 "$frontend_pid" 2>/dev/null; then
-    kill "$frontend_pid" 2>/dev/null || true
+  if [[ -n "$http_frontend_pid" ]] && kill -0 "$http_frontend_pid" 2>/dev/null; then
+    kill "$http_frontend_pid" 2>/dev/null || true
+  fi
+  if [[ -n "$https_frontend_pid" ]] && kill -0 "$https_frontend_pid" 2>/dev/null; then
+    kill "$https_frontend_pid" 2>/dev/null || true
   fi
   if [[ -n "$backend_pid" ]] && kill -0 "$backend_pid" 2>/dev/null; then
     kill "$backend_pid" 2>/dev/null || true
   fi
-  wait "$frontend_pid" "$backend_pid" 2>/dev/null || true
+  wait "$http_frontend_pid" "$https_frontend_pid" "$backend_pid" 2>/dev/null || true
 }
 trap cleanup EXIT INT TERM
 
@@ -137,20 +141,25 @@ if [[ ! -d "$FRONTEND_DIR/node_modules/jsqr" || ! -d "$FRONTEND_DIR/node_modules
   (cd "$FRONTEND_DIR" && npm install)
 fi
 
-echo "Starting frontend..."
+echo "Starting frontend over HTTP..."
 (
   cd "$FRONTEND_DIR"
-  npm run dev
+  npm run dev -- --port "${FRONTEND_HTTP_PORT:-5173}"
 ) &
-frontend_pid=$!
+http_frontend_pid=$!
+
+echo "Starting frontend over HTTPS..."
+(
+  cd "$FRONTEND_DIR"
+  npm run dev:https -- --port "${FRONTEND_HTTPS_PORT:-5174}"
+) &
+https_frontend_pid=$!
 
 echo ""
 echo "TableBite is starting:"
-echo "  Customer app : http://localhost:5173/"
-echo "  Demo table   : http://localhost:5173/table/tablebite-demo-t01-8c9d4d1e"
-echo "  Kitchen      : http://localhost:5173/kitchen  (kitchen code: $KITCHEN_ACCESS_CODE)"
-echo "  Admin        : http://localhost:5173/staff/login  (admin@tablebite.local / Admin@12345 on first run)"
-echo "  Phones on the same Wi-Fi: use the 'Network' URL Vite prints below."
-echo "Press Ctrl+C to stop both services."
+echo "  Local app    : use the HTTP Local URL printed by Vite (default http://localhost:${FRONTEND_HTTP_PORT:-5173}/)."
+echo "  Phone camera : use the HTTPS Network URL printed by Vite (default port ${FRONTEND_HTTPS_PORT:-5174})."
+echo "  Accept Vite's self-signed certificate warning on each device."
+echo "Press Ctrl+C to stop the backend and both frontend servers."
 
-wait "$backend_pid" "$frontend_pid"
+wait "$backend_pid" "$http_frontend_pid" "$https_frontend_pid"

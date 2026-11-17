@@ -15,7 +15,7 @@ const year = new Date().getFullYear()
           <BrandMark />
           <span class="text-xl font-extrabold text-white">{{ settings.state.restaurant_name }}</span>
         </div>
-        <p class="mt-4 max-w-sm text-sm leading-relaxed">{{ settings.state.tagline }}. Scan the QR code on your table, order in seconds and watch your food come to life — live.</p>
+        <p class="mt-4 max-w-sm text-sm leading-relaxed">{{ settings.state.tagline }}</p>
       </div>
       <div>
         <h3 class="text-sm font-bold text-white">Visit us</h3>

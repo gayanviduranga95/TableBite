@@ -2,8 +2,8 @@
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
-  ArrowRight, BellRing, ChefHat, CircleAlert, Clock, MapPin, QrCode, Receipt, RefreshCw,
-  ScanLine, Search, ShieldCheck, Sparkles, Star, TrendingUp,
+  ArrowRight, CircleAlert, Clock, MapPin, QrCode, Receipt, RefreshCw,
+  ScanLine, Search, TrendingUp,
 } from 'lucide-vue-next'
 import { getCategories, getMenu } from '../../services/orderService'
 import { useOrderStore } from '../../stores/orderStore'
@@ -56,14 +56,11 @@ onMounted(load)
       <div class="container-app relative grid items-center gap-10 py-14 sm:py-20 lg:grid-cols-[1.15fr_0.85fr] lg:py-24">
         <div class="animate-rise">
           <p class="inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-xs font-bold text-brand-200 ring-1 ring-white/15 backdrop-blur">
-            <Sparkles class="h-3.5 w-3.5" /> {{ settings.state.tagline }}
+            {{ settings.state.tagline }}
           </p>
           <h1 class="mt-5 font-display text-5xl leading-[1.02] font-normal text-white sm:text-6xl lg:text-7xl">
-            Great food,<br><em class="text-brand-400">straight to your table.</em>
+            Order from<br><em class="text-brand-400">your table.</em>
           </h1>
-          <p class="mt-5 max-w-lg text-base leading-relaxed text-ink-200 sm:text-lg">
-            Scan the QR code on your table, pick your favourites and we'll start cooking — no waiting for a menu, no waving for a waiter.
-          </p>
 
           <form class="mt-8 flex max-w-xl items-center gap-2 rounded-2xl bg-white p-2 shadow-lift" role="search" @submit.prevent="submitSearch">
             <Search class="ml-2 h-5 w-5 shrink-0 text-ink-400" />
@@ -89,14 +86,6 @@ onMounted(load)
           <div class="relative mx-auto aspect-square w-full max-w-md">
             <div class="absolute inset-6 rounded-full bg-gradient-to-br from-brand-400/40 to-transparent blur-2xl" />
             <img src="/images/menu/margherita-pizza.jpg" alt="Wood-fired margherita pizza" class="relative h-full w-full rounded-full object-cover shadow-2xl ring-8 ring-white/10">
-            <div class="absolute -bottom-2 -left-6 flex items-center gap-3 rounded-2xl bg-white p-3 pr-5 text-ink-900 shadow-lift">
-              <span class="grid h-11 w-11 place-items-center rounded-xl bg-brand-50 text-brand-600"><ChefHat class="h-6 w-6" /></span>
-              <div><p class="text-xs text-ink-500">Average prep</p><p class="font-extrabold">~15 minutes</p></div>
-            </div>
-            <div class="absolute top-6 -right-4 flex items-center gap-2 rounded-2xl bg-white p-3 text-ink-900 shadow-lift">
-              <Star class="h-5 w-5 fill-amber-400 text-amber-400" />
-              <div><p class="font-extrabold leading-none">4.9</p><p class="text-[11px] text-ink-500">guest rating</p></div>
-            </div>
           </div>
         </div>
       </div>
@@ -116,7 +105,7 @@ onMounted(load)
       </RouterLink>
       <div class="card flex items-center gap-4 p-4">
         <span class="grid h-12 w-12 place-items-center rounded-2xl bg-leaf-50 text-leaf-500"><Clock class="h-6 w-6" /></span>
-        <span class="flex-1"><span class="block font-bold">Open today</span><span class="text-xs text-ink-500">{{ settings.state.opening_hours || 'See you soon' }}</span></span>
+        <span class="flex-1"><span class="block font-bold">Opening hours</span><span class="text-xs text-ink-500">{{ settings.state.opening_hours || 'Hours not set' }}</span></span>
       </div>
     </section>
 
@@ -131,7 +120,7 @@ onMounted(load)
         <!-- ================= CATEGORIES ================= -->
         <section class="mt-14">
           <div class="flex items-end justify-between">
-            <div><p class="eyebrow">Explore</p><h2 class="mt-1 text-2xl font-extrabold sm:text-3xl">What are you craving?</h2></div>
+            <h2 class="text-2xl font-extrabold sm:text-3xl">Menu categories</h2>
             <RouterLink to="/menu" class="hidden text-sm font-bold text-brand-600 hover:text-brand-700 sm:block">View full menu →</RouterLink>
           </div>
           <div class="no-scrollbar -mx-4 mt-6 flex gap-3 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-5 sm:px-0 lg:grid-cols-9">
@@ -156,7 +145,7 @@ onMounted(load)
         <!-- ================= POPULAR ================= -->
         <section class="mt-14">
           <div class="flex items-end justify-between">
-            <div><p class="eyebrow inline-flex items-center gap-1.5"><TrendingUp class="h-3.5 w-3.5" /> Most ordered</p><h2 class="mt-1 text-2xl font-extrabold sm:text-3xl">Popular right now</h2></div>
+            <div><p class="eyebrow inline-flex items-center gap-1.5"><TrendingUp class="h-3.5 w-3.5" /> Most ordered</p><h2 class="mt-1 text-2xl font-extrabold sm:text-3xl">Popular dishes</h2></div>
             <RouterLink to="/menu" class="text-sm font-bold text-brand-600 hover:text-brand-700">See all</RouterLink>
           </div>
           <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
@@ -168,7 +157,7 @@ onMounted(load)
         <!-- ================= RECOMMENDED (feature) ================= -->
         <section v-if="loading || recommended.length" class="mt-16 overflow-hidden rounded-[2rem] bg-gradient-to-br from-brand-50 via-white to-amber-50 p-5 ring-1 ring-brand-100 sm:p-8">
           <div class="flex items-end justify-between">
-            <div><p class="eyebrow">Chef's picks</p><h2 class="mt-1 text-2xl font-extrabold sm:text-3xl">Recommended for you</h2></div>
+            <div><p class="eyebrow">Chef's picks</p><h2 class="mt-1 text-2xl font-extrabold sm:text-3xl">Recommended dishes</h2></div>
           </div>
           <div class="mt-6 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
             <template v-if="loading"><FoodCardSkeleton v-for="n in 4" :key="n" /></template>
@@ -178,33 +167,12 @@ onMounted(load)
 
         <!-- ================= NEW ================= -->
         <section v-if="!loading && newArrivals.length" class="mt-16">
-          <p class="eyebrow">Just landed</p>
           <h2 class="mt-1 text-2xl font-extrabold sm:text-3xl">New arrivals</h2>
           <div class="mt-6 grid gap-3 sm:grid-cols-2">
             <FoodCard v-for="item in newArrivals" :key="item.id" :item="item" layout="row" />
           </div>
         </section>
 
-        <!-- ================= HOW IT WORKS ================= -->
-        <section class="mt-20">
-          <div class="text-center">
-            <p class="eyebrow">How it works</p>
-            <h2 class="mt-1 text-2xl font-extrabold sm:text-3xl">From table to tasty in three taps</h2>
-          </div>
-          <div class="mt-8 grid gap-4 sm:grid-cols-3">
-            <div v-for="(step, index) in [
-              { icon: ScanLine, title: 'Scan the table QR', text: 'Your table number is detected automatically — nothing to type.' },
-              { icon: ChefHat, title: 'Order your favourites', text: 'Customise quantities, add notes and send it straight to the kitchen.' },
-              { icon: BellRing, title: 'Track it live', text: 'Watch your order go from the pan to your plate in real time.' },
-            ]" :key="step.title" class="card-pad relative">
-              <span class="absolute top-5 right-6 font-display text-5xl text-ink-100">0{{ index + 1 }}</span>
-              <span class="grid h-12 w-12 place-items-center rounded-2xl bg-ink-900 text-white"><component :is="step.icon" class="h-6 w-6" /></span>
-              <h3 class="mt-4 font-extrabold">{{ step.title }}</h3>
-              <p class="mt-1 text-sm text-ink-500">{{ step.text }}</p>
-            </div>
-          </div>
-          <p class="mt-6 flex items-center justify-center gap-2 text-xs text-ink-400"><ShieldCheck class="h-4 w-4" /> Pay with cash or at the counter — no card details needed.</p>
-        </section>
       </template>
     </div>
   </div>

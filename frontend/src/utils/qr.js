@@ -45,7 +45,7 @@ export async function tableCardPng({ restaurant, tableNumber, url }) {
   ctx.fillStyle = '#f26a17'
   ctx.font = '800 44px "Plus Jakarta Sans", Arial, sans-serif'
   ctx.textAlign = 'center'
-  ctx.fillText('SCAN · ORDER · ENJOY', width / 2, 170)
+  ctx.fillText('SCAN TO ORDER', width / 2, 170)
   ctx.fillStyle = '#ffffff'
   ctx.font = '400 104px "DM Serif Display", Georgia, serif'
   ctx.fillText(restaurant, width / 2, 300)

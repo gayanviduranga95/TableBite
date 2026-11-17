@@ -1,15 +1,13 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
-import { Banknote, CreditCard, Info, RefreshCw, Store, Wallet } from 'lucide-vue-next'
+import { Banknote, CreditCard, RefreshCw, Store, Wallet } from 'lucide-vue-next'
 import { getPayments } from '../../services/orderService'
-import { useSettings } from '../../stores/settingsStore'
 import { useStaffEvents } from '../../composables/useStaffEvents'
 import { dateTime, money } from '../../utils/formatters'
 import { PAYMENT_LABELS } from '../../utils/status'
 import EmptyState from '../../components/EmptyState.vue'
 import StatCard from '../../components/StatCard.vue'
 
-const settings = useSettings()
 const payments = ref([])
 const loading = ref(true)
 const error = ref('')
@@ -44,7 +42,6 @@ onMounted(load)
       <div>
         <p class="eyebrow">Finance</p>
         <h1 class="mt-1 text-3xl font-extrabold">Payments</h1>
-        <p class="text-sm text-ink-500">Every order creates a pending payment; staff confirm it when the bill is settled.</p>
       </div>
       <button class="btn-light" @click="load"><RefreshCw class="h-4 w-4" /> Refresh</button>
     </div>
@@ -54,11 +51,6 @@ onMounted(load)
       <StatCard label="Outstanding" :value="money(outstanding)" :icon="Store" accent="bg-amber-50 text-amber-600" />
       <StatCard label="Cash" :value="money(byMethod('CASH'))" :icon="Banknote" />
       <StatCard label="Card & counter" :value="money(byMethod('CARD') + byMethod('PAY_AT_COUNTER'))" :icon="CreditCard" accent="bg-sky-50 text-sky-600" />
-    </div>
-
-    <div v-if="!settings.state.online_payment_enabled" class="mt-5 flex gap-3 rounded-2xl bg-sky-50 p-4 text-sm text-sky-900 ring-1 ring-sky-200">
-      <Info class="h-5 w-5 shrink-0 text-sky-600" />
-      <p>Online card payments are not configured, so customers can only choose cash or pay at the counter. See <code>README.md → Payments</code> for connecting a gateway such as PayHere or Stripe.</p>
     </div>
 
     <div class="card mt-6 flex flex-wrap gap-2 p-3">

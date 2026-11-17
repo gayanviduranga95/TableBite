@@ -5,7 +5,7 @@ import EmptyState from '../../components/EmptyState.vue'
 
 <template>
   <div class="container-app py-16">
-    <EmptyState :icon="CookingPot" title="This page isn't on the menu" message="The link may be broken or the page may have moved.">
+    <EmptyState :icon="CookingPot" title="Page not found" message="Check the address or return to the menu.">
       <RouterLink to="/" class="btn-primary">Go home</RouterLink>
       <RouterLink to="/menu" class="btn-light">Browse the menu</RouterLink>
     </EmptyState>

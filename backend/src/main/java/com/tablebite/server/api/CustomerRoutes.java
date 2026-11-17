@@ -52,6 +52,8 @@ public final class CustomerRoutes {
             ctx.ok(publicTable(tables.resolveNumber(ctx.bodyText("tableNumber"))));
         });
         router.get("/api/tables/{token}", ctx -> ctx.ok(publicTable(tables.resolveToken(ctx.path("token")))));
+        router.post("/api/tables/{token}/leave", ctx -> ctx.ok(
+            Map.of("available", tables.leave(ctx.path("token")))));
 
         // ---------- auth
         router.post("/api/auth/register", ctx -> ctx.created(auth.register(

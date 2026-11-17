@@ -36,7 +36,7 @@ export DB_USER=postgres
 export DB_PASSWORD=your_password
 ./run.sh
 ```
-`run.sh` picks a JDK 21+, builds the backend, installs the frontend packages, and starts both.
+`run.sh` picks a JDK 21+, builds the backend, installs the frontend packages, and starts both HTTP and HTTPS frontends. Use the HTTP **Local** URL Vite prints on this computer (normally `http://localhost:5173`); for phone camera access, open the HTTPS **Network** URL (normally port `5174`) and accept its self-signed certificate warning. If a port is already in use, Vite automatically selects another and prints the actual URLs.
 
 ### 1.3 Or start each part yourself
 
@@ -91,18 +91,18 @@ For production, set `ADMIN_EMAIL` / `ADMIN_PASSWORD` before the first start, `SE
 2. Each table card shows its live QR code. Use **PNG** to download a branded, print-ready card, **Print** for one table, or **Print all** for an A4 sheet of every table.
 3. Use **Add table** to create a table with a new secure token. **Generate new QR code** (↻) invalidates the old printed code.
 
-A QR code contains a URL like `http://<host>/table/tb-3f9c…`. The token is 128 random bits, so table codes cannot be guessed.
+A QR code contains a URL like `https://<host>:5174/table/tb-3f9c…`. The token is 128 random bits, so table codes cannot be guessed.
 
-> **Important:** QR codes point to the **public ordering URL**. `localhost` only works on the computer itself, so before printing, go to **Settings → Public ordering URL** and enter your computer's LAN address, for example `http://192.168.1.20:5173`. Vite prints it as the *Network* URL.
+> **Important:** QR codes point to the **public ordering URL**. `localhost` only works on the computer itself, so before printing, go to **Settings → Public ordering URL** and enter your computer's HTTPS LAN address, for example `https://192.168.1.20:5174`. Vite prints it as the *Network* URL.
 
 ### Test QR scanning
 - **On the computer:** open `/scan`. The camera works on `localhost`. Hold a printed or on-screen QR code up to the webcam, or use **Scan from a photo** with a downloaded PNG.
 - **On a phone (same Wi-Fi):**
-  1. Browsers only allow live camera access over HTTPS, so run `npm run dev:https` and open `https://<your-ip>:5173`. Accept the self-signed certificate warning once.
+  1. `./run.sh` starts the frontend over HTTPS on port `5174`. Open Vite's HTTPS Network URL (`https://<your-ip>:5174`) and accept the self-signed certificate warning. If starting the frontend manually, use `npm run dev:https -- --port 5174` instead of `npm run dev`.
   2. Set the Public ordering URL to that `https://<your-ip>:5173` address and print or download the QR codes.
   3. Point the phone's normal camera app at the QR code. It opens the menu with the table already selected. Inside the app, `/scan` also works.
   4. Without HTTPS, **Scan from a photo** and the manual table number fallback still work.
-- If Windows Firewall asks, allow Node.js on private networks so phones can reach port 5173.
+- If Windows Firewall asks, allow Node.js on private networks so phones can reach port 5174.
 - Invalid or old codes show a friendly "We couldn't recognise this table" page with options to scan again or enter the table number.
 
 ---

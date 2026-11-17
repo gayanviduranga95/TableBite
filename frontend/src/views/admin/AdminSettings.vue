@@ -17,7 +17,6 @@ const saving = ref(false)
 const error = ref('')
 const users = ref([])
 const roleFilter = ref('')
-const suggestedUrl = `${window.location.protocol}//${window.location.host}`
 
 async function load() {
   try {
@@ -101,13 +100,11 @@ onMounted(load)
           <label class="block"><span class="field-label">Tax %</span><input v-model="form.tax_rate" type="number" min="0" max="100" step="0.01" class="input" required></label>
           <label class="block"><span class="field-label">Service charge %</span><input v-model="form.service_charge_rate" type="number" min="0" max="100" step="0.01" class="input" required></label>
         </div>
-        <p class="text-xs text-ink-500">Service charge applies to dine-in orders only. Totals are always recalculated on the server.</p>
         <label class="flex items-center gap-3 text-sm font-semibold"><input v-model="form.allow_takeaway" type="checkbox" true-value="true" false-value="false" class="h-4 w-4 accent-brand-500"> Accept takeaway orders</label>
         <label class="flex items-center gap-3 text-sm font-semibold"><input v-model="form.allow_manual_table_selection" type="checkbox" true-value="true" false-value="false" class="h-4 w-4 accent-brand-500"> Let guests enter their table number if they can't scan</label>
         <label class="block">
           <span class="field-label">Public ordering URL (used inside QR codes)</span>
-          <input v-model="form.public_base_url" class="input" maxlength="200" placeholder="http://192.168.1.20:5173">
-          <span class="mt-1 block text-xs text-ink-500">Leave empty to use the address you're on now. Phones need your computer's network address — e.g. <button type="button" class="font-bold text-brand-600" @click="form.public_base_url = suggestedUrl">{{ suggestedUrl }}</button>.</span>
+          <input v-model="form.public_base_url" class="input" maxlength="200">
         </label>
       </section>
 
@@ -121,7 +118,6 @@ onMounted(load)
       <div class="flex flex-wrap items-center justify-between gap-3 border-b border-ink-100 px-6 py-4">
         <div>
           <h2 class="flex items-center gap-2 font-extrabold"><UserCog class="h-5 w-5 text-brand-600" /> Team & accounts</h2>
-          <p class="text-xs text-ink-500">Roles control access: admins manage everything, kitchen sees the kitchen display, floor staff serve and take payments.</p>
         </div>
         <div class="flex gap-2">
           <select v-model="roleFilter" class="input w-auto py-2" aria-label="Role filter" @change="filterUsers"><option value="">All roles</option><option>ADMIN</option><option>KITCHEN</option><option>WAITER</option><option>CUSTOMER</option></select>
@@ -153,7 +149,7 @@ onMounted(load)
         <label class="sm:col-span-2"><span class="field-label">Full name</span><input v-model="newUser.fullName" class="input" required maxlength="120"></label>
         <label><span class="field-label">Email</span><input v-model="newUser.email" type="email" class="input" required maxlength="160"></label>
         <label><span class="field-label">Role</span><select v-model="newUser.role" class="input"><option value="KITCHEN">Kitchen</option><option value="WAITER">Floor / waiter</option><option value="ADMIN">Admin</option></select></label>
-        <label class="sm:col-span-2"><span class="field-label">Temporary password</span><PasswordInput v-model="newUser.password" autocomplete="new-password" /><span class="mt-1 block text-xs text-ink-500">8+ characters with letters and numbers. Ask them to change it after signing in.</span></label>
+        <label class="sm:col-span-2"><span class="field-label">Temporary password</span><PasswordInput v-model="newUser.password" autocomplete="new-password" /></label>
         <p v-if="userError" class="rounded-xl bg-red-50 p-3 text-sm font-semibold text-red-700 sm:col-span-2">{{ userError }}</p>
       </form>
       <template #footer>

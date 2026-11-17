@@ -56,7 +56,6 @@ const tableTone = {
       <div>
         <p class="eyebrow">Front of house</p>
         <h1 class="mt-1 text-3xl font-extrabold">Floor service</h1>
-        <p class="text-sm text-ink-500">Serve ready orders, take payments and keep an eye on every table.</p>
       </div>
       <button class="btn-light" @click="load"><RefreshCw class="h-4 w-4" /> Refresh</button>
     </div>
@@ -69,7 +68,7 @@ const tableTone = {
         <!-- Ready to serve -->
         <section class="card-pad lg:col-span-2">
           <h2 class="flex items-center gap-2 text-lg font-extrabold"><BellRing class="h-5 w-5 text-emerald-600" /> Ready to serve <span class="text-ink-400">{{ ready.length }}</span></h2>
-          <p v-if="!ready.length" class="mt-6 rounded-2xl bg-ink-50 py-10 text-center text-sm text-ink-500">No orders waiting. The kitchen will notify you here.</p>
+          <p v-if="!ready.length" class="mt-6 rounded-2xl bg-ink-50 py-10 text-center text-sm text-ink-500">No orders ready to serve.</p>
           <div v-else class="mt-4 grid gap-3 sm:grid-cols-2">
             <article v-for="order in ready" :key="order.id" class="rounded-2xl border-2 border-emerald-200 bg-emerald-50/50 p-4">
               <div class="flex items-start justify-between">
